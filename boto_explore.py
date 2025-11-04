@@ -1,72 +1,77 @@
 import boto3
-from botocore.exceptions import ClientError
 from datetime import datetime, timedelta, timezone
-
-cloudwatch=boto3.client('cloudwatch')
-
-resource_arn="arn:aws:lambda:ap-south-1:961341531249:function:sam-app-HelloWorldFunction-JUnbZN1kVzIt"
-resource_name=resource_arn.split(':')[-1]
-service=resource_arn.split(':')[2]
-name_space="AWS/"+service.title()
-end = datetime.now(timezone.utc)
-start = end - timedelta(days=30)
-aws_resource_instance=boto3.client(service)
-
-if service=="lambda":
-    metrics_to_fetch=[
-        ("Invocations","Sum"),
-        ("Duration","Average"),
-        ("Errors","Sum"),
-        ("Throttles", "Sum"),
-        ("ConcurrentExecution","Maximum")
-    ]
-    name='FunctionName'
-    details=aws_resource_instance.get_function(FunctionName=resource_name)
-    keys=['Runtime','Timeout', 'EphemeralStorage', 'MemorySize', 'Description', 'CodeSize', 'Handler']
-    configuration='Configuration'
-
-data=[]
-
-for metric_name, stat in metrics_to_fetch:
-    response=cloudwatch.get_metric_statistics(
-        Namespace=service,
-        MetricName=metric_name,
-        Dimensions=[
-            {
-                'Name':name,
-                'Value':resource_name
-            }
-        ],
-        StartTime=start,
-        EndTime=end,
-        Period=3600,
-        Statistics=[stat]
-    )
-
-    datapoints=response['Datapoints']
-    if datapoints:
-        avg_value=sum(dp[stat] for dp in datapoints)/len(datapoints)
-    else:
-        avg_value=0
-    data.append({
-        "Metric":metric_name,
-        "Statistic":stat,
-        "AverageValue":round(avg_value,2)
-    })
+from service_config import SERVICE_CONFIG
 
 
-print("results:")
-print("Service: ", service)
+def get_resource_client(service):
+    return boto3.client(service)
 
-prompt=""
-for k in keys:
-    value = details[configuration].get(k)
-    prompt += f"{k}:{value}\n" 
+def get_resource_config(service, name):
+    info = SERVICE_CONFIG.get(service)
+    if not info:
+        return {}
 
-for d in data:
-    prompt+=f"{d['Metric']}: {d['AverageValue']}  {d['Statistic']}\n"
+    client = get_resource_client(service)
+    desc = info['describe']
 
-prompt="Base on the following service data, suggest me what actions can be perfomed to optimise cost, performance, configuration or any other useful insights?"+prompt
+    try:
+        response = getattr(client, desc['method'])(**{desc['param']: name})
+        details = response.get(desc['config_key'], {})
+        return {k: details.get(k) for k in desc['keys']}
+    except Exception as e:
+        print(f"Error getting config for {service}: {e}")
+        return {}
+
+def get_service_metrics(service, name):
+    info = SERVICE_CONFIG.get(service)
+    if not info:
+        return []
+    
+    cloudwatch = boto3.client('cloudwatch')
+    end = datetime.now(timezone.utc)
+    start = end - timedelta(days=7)
+
+    metrics_to_fetch = info["metrics"]
+    data = []
+
+    for metric_name, stat in metrics_to_fetch:
+        response = cloudwatch.get_metric_statistics(
+            Namespace=info["namespace"],
+            MetricName=metric_name,
+            Dimensions=[{'Name': info["describe"]["param"].replace("Name", ""), 'Value': name}],
+            StartTime=start,
+            EndTime=end,
+            Period=3600,
+            Statistics=[stat]
+        )
+
+        datapoints = response["Datapoints"]
+        avg_value = sum(dp[stat] for dp in datapoints) / len(datapoints) if datapoints else 0
+        data.append({"Metric": metric_name, "Statistic": stat, "AverageValue": round(avg_value, 2)})
+
+    return data
+
+
+def generate_prompt(service, name):
+    config = get_resource_config(service, name)
+    metrics = get_service_metrics(service, name)
+
+    prompt = f"\nService: {service}\nResource: {name}\n\nConfiguration:\n"
+    for k, v in config.items():
+        prompt += f"{k}: {v}\n"
+
+    prompt += "\nMetrics:\n"
+    for d in metrics:
+        prompt += f"{d['Metric']}: {d['AverageValue']} ({d['Statistic']})\n"
+
+    prompt += "\nBased on this data, suggest actions to optimize cost, performance, or configuration."
+    return prompt
+
+resource_arn = "arn:aws:lambda:ap-south-1:961341531249:function:sam-app-HelloWorldFunction-JUnbZN1kVzIt"
+service = resource_arn.split(':')[2]
+resource_name = resource_arn.split('/')[-1]
+
+prompt = generate_prompt(service, resource_name)
 print(prompt)
 
 # client = boto3.client("bedrock-runtime", region_name="us-east-1")
