@@ -127,6 +127,37 @@ SERVICE_CONFIG = {
                 "registeredContainerInstancesCount"
             ]
         }
+    },
+    "cloudwatch":{
+
+    },
+    "apigateway":{
+
+    },
+    "sqs":{
+
+    },
+    "ec2":{
+
+    },
+    "kms":{
+
+    },
+    "elasticloadbalancing":{
+
+    },
+    "opensearchservice":{
+        # arn check
+
+    },
+    "redshift":{
+
+    },
+    "iot":{
+
+    },
+    "athena":{
+
     }
 }
 

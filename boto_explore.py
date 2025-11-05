@@ -29,7 +29,7 @@ def get_service_metrics(service, name):
     
     cloudwatch = boto3.client('cloudwatch')
     end = datetime.now(timezone.utc)
-    start = end - timedelta(days=7)
+    start = end - timedelta(days=30)
 
     metrics_to_fetch = info["metrics"]
     data = []
@@ -67,9 +67,9 @@ def generate_prompt(service, name):
     prompt += "\nBased on this data, suggest actions to optimize cost, performance, or configuration."
     return prompt
 
-resource_arn = "arn:aws:lambda:ap-south-1:961341531249:function:sam-app-HelloWorldFunction-JUnbZN1kVzIt"
+resource_arn = "arn:aws:s3:::cost-and-usage-rep-s3"
 service = resource_arn.split(':')[2]
-resource_name = resource_arn.split('/')[-1]
+resource_name = resource_arn.split(':')[-1]
 
 prompt = generate_prompt(service, resource_name)
 print(prompt)
