@@ -6,14 +6,14 @@ SERVICE_CONFIG = {
             ("Duration", "Average"),
             ("Errors", "Sum"),
             ("Throttles", "Sum"),
-            ("ConcurrentExecutions", "Maximum")
+            ("ConcurrentExecutions", "Maximum"),
         ],
         "describe": {
             "method": "get_function",
             "param": "FunctionName",
             "config_key": "Configuration",
-            "keys": ["Runtime", "Timeout", "MemorySize", "CodeSize", "Handler"]
-        }
+            "keys": ["Runtime", "Timeout", "MemorySize", "CodeSize", "Handler"],
+        },
     },
     "dynamodb": {
         "namespace": "AWS/DynamoDB",
@@ -22,14 +22,14 @@ SERVICE_CONFIG = {
             ("ConsumedWriteCapacityUnits", "Sum"),
             ("ProvisionedReadCapacityUnits", "Sum"),
             ("ProvisionedWriteCapacityUnits", "Sum"),
-            ("ThrottledRequests", "Sum")
+            ("ThrottledRequests", "Sum"),
         ],
         "describe": {
             "method": "describe_table",
             "param": "TableName",
             "config_key": "Table",
-            "keys": ["TableStatus", "BillingModeSummary", "ItemCount", "TableSizeBytes"]
-        }
+            "keys": ["TableStatus", "BillingModeSummary", "ItemCount", "TableSizeBytes"],
+        },
     },
     "rds": {
         "namespace": "AWS/RDS",
@@ -41,7 +41,7 @@ SERVICE_CONFIG = {
             ("ReadIOPS", "Sum"),
             ("WriteIOPS", "Sum"),
             ("ReadLatency", "Average"),
-            ("WriteLatency", "Average")
+            ("WriteLatency", "Average"),
         ],
         "describe": {
             "method": "describe_db_instances",
@@ -56,9 +56,9 @@ SERVICE_CONFIG = {
                 "MultiAZ",
                 "BackupRetentionPeriod",
                 "StorageEncrypted",
-                "PubliclyAccessible"
-            ]
-        }
+                "PubliclyAccessible",
+            ],
+        },
     },
     "s3": {
         "namespace": "AWS/S3",
@@ -69,14 +69,14 @@ SERVICE_CONFIG = {
             ("GetRequests", "Sum"),
             ("PutRequests", "Sum"),
             ("4xxErrors", "Sum"),
-            ("5xxErrors", "Sum")
+            ("5xxErrors", "Sum"),
         ],
         "describe": {
             "method": "get_bucket_location",
             "param": "Bucket",
             "config_key": None,
-            "keys": ["LocationConstraint"]
-        }
+            "keys": ["LocationConstraint"],
+        },
     },
     "ebs": {
         "namespace": "AWS/EBS",
@@ -86,7 +86,7 @@ SERVICE_CONFIG = {
             ("VolumeReadBytes", "Sum"),
             ("VolumeWriteBytes", "Sum"),
             ("BurstBalance", "Average"),
-            ("VolumeIdleTime", "Average")
+            ("VolumeIdleTime", "Average"),
         ],
         "describe": {
             "method": "describe_volumes",
@@ -99,11 +99,10 @@ SERVICE_CONFIG = {
                 "State",
                 "Encrypted",
                 "SnapshotId",
-                "AvailabilityZone"
-            ]
-        }
+                "AvailabilityZone",
+            ],
+        },
     },
-
     "ecs": {
         "namespace": "AWS/ECS",
         "metrics": [
@@ -112,7 +111,7 @@ SERVICE_CONFIG = {
             ("NetworkRxBytes", "Sum"),
             ("NetworkTxBytes", "Sum"),
             ("StorageReadBytes", "Sum"),
-            ("StorageWriteBytes", "Sum")
+            ("StorageWriteBytes", "Sum"),
         ],
         "describe": {
             "method": "describe_clusters",
@@ -124,40 +123,277 @@ SERVICE_CONFIG = {
                 "runningTasksCount",
                 "pendingTasksCount",
                 "activeServicesCount",
-                "registeredContainerInstancesCount"
-            ]
-        }
+                "registeredContainerInstancesCount",
+            ],
+        },
     },
-    "cloudwatch":{
-
+    "cloudwatch": {
+        "namespace": "AWS/CloudWatch",
+        "metrics": [
+            ("GetMetricData", "Sum"),
+            ("GetMetricStatistics", "Sum"),
+            ("PutMetricData", "Sum"),
+            ("ListMetrics", "Sum"),
+            ("MetricDataAvailability", "Average"),
+        ],
+        "describe": {
+            "method": "describe_alarms",
+            "param": None,
+            "config_key": "MetricAlarms",
+            "keys": [
+                "AlarmName",
+                "StateValue",
+                "MetricName",
+                "Namespace",
+                "Statistic",
+                "Threshold",
+                "ComparisonOperator",
+            ],
+        },
     },
-    "apigateway":{
-
+    "apigateway": {
+        "namespace": "AWS/ApiGateway",
+        "metrics": [
+            ("Count", "Sum"),
+            ("4XXError", "Sum"),
+            ("5XXError", "Sum"),
+            ("Latency", "Average"),
+            ("IntegrationLatency", "Average"),
+        ],
+        "describe": {
+            "method": "get_rest_api",
+            "param": "restApiId",
+            "config_key": None,
+            "keys": [
+                "name",
+                "description",
+                "createdDate",
+                "version",
+                "apiKeySource",
+                "endpointConfiguration",
+            ],
+        },
     },
-    "sqs":{
-
+    "sqs": {
+        "namespace": "AWS/SQS",
+        "metrics": [
+            ("NumberOfMessagesSent", "Sum"),
+            ("NumberOfMessagesReceived", "Sum"),
+            ("NumberOfMessagesDeleted", "Sum"),
+            ("ApproximateNumberOfMessagesVisible", "Average"),
+            ("ApproximateNumberOfMessagesNotVisible", "Average"),
+            ("ApproximateAgeOfOldestMessage", "Maximum"),
+        ],
+        "describe": {
+            "method": "get_queue_attributes",
+            "param": "QueueUrl",
+            "config_key": "Attributes",
+            "keys": [
+                "VisibilityTimeout",
+                "MaximumMessageSize",
+                "MessageRetentionPeriod",
+                "DelaySeconds",
+                "ReceiveMessageWaitTimeSeconds",
+                "KmsMasterKeyId",
+            ],
+        },
     },
-    "ec2":{
-
+    "ec2": {
+        "namespace": "AWS/EC2",
+        "metrics": [
+            ("CPUUtilization", "Average"),
+            ("NetworkIn", "Sum"),
+            ("NetworkOut", "Sum"),
+            ("DiskReadBytes", "Sum"),
+            ("DiskWriteBytes", "Sum"),
+            ("StatusCheckFailed", "Maximum"),
+            ("StatusCheckFailed_Instance", "Maximum"),
+            ("StatusCheckFailed_System", "Maximum"),
+        ],
+        "describe": {
+            "method": "describe_instances",
+            "param": "InstanceIds",
+            "config_key": "Reservations",
+            "keys": [
+                "InstanceId",
+                "InstanceType",
+                "ImageId",
+                "State",
+                "LaunchTime",
+                "PrivateIpAddress",
+                "PublicIpAddress",
+                "Architecture",
+                "RootDeviceType",
+                "VirtualizationType",
+            ],
+        },
     },
-    "kms":{
-
+    "kms": {
+        "namespace": "AWS/KMS",
+        "metrics": [
+            ("RequestCount", "Sum"),
+            ("ThrottleCount", "Sum"),
+            ("ErrorCount", "Sum"),
+        ],
+        "describe": {
+            "method": "describe_key",
+            "param": "KeyId",
+            "config_key": "KeyMetadata",
+            "keys": [
+                "KeyId",
+                "Arn",
+                "KeyState",
+                "KeyUsage",
+                "Description",
+                "CustomerMasterKeySpec",
+                "CreationDate",
+                "Enabled",
+                "Origin",
+            ],
+        },
     },
-    "elasticloadbalancing":{
-
+    "elasticloadbalancing": {
+        "namespace": "AWS/ELB",
+        "metrics": [
+            ("RequestCount", "Sum"),
+            ("HealthyHostCount", "Average"),
+            ("UnHealthyHostCount", "Average"),
+            ("Latency", "Average"),
+            ("HTTPCode_ELB_4XX", "Sum"),
+            ("HTTPCode_ELB_5XX", "Sum"),
+            ("HTTPCode_Target_2XX_Count", "Sum"),
+            ("HTTPCode_Target_4XX_Count", "Sum"),
+            ("HTTPCode_Target_5XX_Count", "Sum"),
+            ("TargetResponseTime", "Average"),
+        ],
+        "describe": {
+            "method": "describe_load_balancers",
+            "param": "Names",
+            "config_key": "LoadBalancers",
+            "keys": [
+                "LoadBalancerName",
+                "DNSName",
+                "Type",
+                "Scheme",
+                "VpcId",
+                "State",
+                "AvailabilityZones",
+                "IpAddressType",
+                "CreatedTime",
+            ],
+        },
     },
-    "opensearchservice":{
-        # arn check
-
+    "es": {
+        "namespace": "AWS/ES",
+        "metrics": [
+            ("CPUUtilization", "Average"),
+            ("JVMMemoryPressure", "Average"),
+            ("FreeStorageSpace", "Minimum"),
+            ("ClusterStatus.green", "Maximum"),
+            ("ClusterStatus.yellow", "Maximum"),
+            ("ClusterStatus.red", "Maximum"),
+            ("AutomatedSnapshotFailure", "Sum"),
+            ("MasterCPUUtilization", "Average"),
+            ("MasterJVMMemoryPressure", "Average"),
+            ("ReadIOPS", "Sum"),
+            ("WriteIOPS", "Sum"),
+            ("ClusterUsedSpace", "Average"),
+        ],
+        "describe": {
+            "method": "describe_domain",
+            "param": "DomainName",
+            "config_key": "DomainStatus",
+            "keys": [
+                "DomainName",
+                "EngineVersion",
+                "InstanceType",
+                "InstanceCount",
+                "EBSOptions",
+                "AccessPolicies",
+                "EncryptionAtRestOptions",
+                "NodeToNodeEncryptionOptions",
+                "VPCOptions",
+            ],
+        },
     },
-    "redshift":{
-
+    "redshift": {
+        "namespace": "AWS/Redshift",
+        "metrics": [
+            ("CPUUtilization", "Average"),
+            ("DatabaseConnections", "Average"),
+            ("HealthStatus", "Minimum"),
+            ("FreeStorageSpace", "Minimum"),
+            ("ReadIOPS", "Sum"),
+            ("WriteIOPS", "Sum"),
+            ("NetworkReceiveThroughput", "Average"),
+            ("NetworkTransmitThroughput", "Average"),
+            ("MaintenanceMode", "Maximum"),
+        ],
+        "describe": {
+            "method": "describe_clusters",
+            "param": "ClusterIdentifier",
+            "config_key": "Clusters",
+            "keys": [
+                "ClusterIdentifier",
+                "NodeType",
+                "NumberOfNodes",
+                "ClusterStatus",
+                "ClusterVersion",
+                "Encrypted",
+                "PubliclyAccessible",
+                "AutomatedSnapshotRetentionPeriod",
+                "VpcId",
+                "EnhancedVpcRouting",
+            ],
+        },
     },
-    "iot":{
-
+    "iot": {
+        "namespace": "AWS/IoT",
+        "metrics": [
+            ("NumberOfMessagesPublished", "Sum"),
+            ("NumberOfMessagesReceived", "Sum"),
+            ("NumberOfMessagesDropped", "Sum"),
+            ("NumberOfNotifications", "Sum"),
+            ("NumberOfConnectCalls", "Sum"),
+            ("NumberOfDisconnectCalls", "Sum"),
+            ("NumberOfRejectedConnectionCalls", "Sum"),
+            ("NumberOfAuthorizationFailures", "Sum"),
+        ],
+        "describe": {
+            "method": "describe_thing",
+            "param": "thingName",
+            "config_key": None,
+            "keys": [
+                "thingName",
+                "thingArn",
+                "version",
+                "thingTypeName",
+                "attributes",
+            ],
+        },
     },
-    "athena":{
-
-    }
+    "athena": {
+        "namespace": "AWS/Athena",
+        "metrics": [
+            ("QuerySuccessful", "Sum"),
+            ("QueryFailed", "Sum"),
+            ("QueryCancelled", "Sum"),
+            ("ProcessedBytes", "Sum"),
+            ("EngineExecutionTime", "Average"),
+        ],
+        "describe": {
+            "method": "get_work_group",
+            "param": "WorkGroup",
+            "config_key": "WorkGroup",
+            "keys": [
+                "Name",
+                "State",
+                "Description",
+                "CreationTime",
+                "Configuration",
+            ],
+        },
+    },
 }
+
 
