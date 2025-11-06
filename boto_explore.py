@@ -1,6 +1,7 @@
 import boto3
 from datetime import datetime, timedelta, timezone
 from service_config import SERVICE_CONFIG
+from botocore.exceptions import ClientError
 
 
 def get_resource_client(service):
@@ -67,34 +68,36 @@ def generate_prompt(service, name):
     prompt += "\nBased on this data, suggest actions to optimize cost, performance, or configuration."
     return prompt
 
-resource_arn = "arn:aws:s3:::cost-and-usage-rep-s3"
-service = resource_arn.split(':')[2]
-resource_name = resource_arn.split(':')[-1]
+resources=[("arn:aws:s3:::cost-and-usage-rep-s3",0.7)]
+for resource in resources:
+    resource_arn=resource[0]
+    service = resource_arn.split(':')[2]
+    resource_name = resource_arn.split(':')[-1]
 
-prompt = generate_prompt(service, resource_name)
-print(prompt)
+    prompt = generate_prompt(service, resource_name)
+    print(prompt)
 
-# client = boto3.client("bedrock-runtime", region_name="us-east-1")
-# model_id = "amazon.nova-lite-v1:0"
-# conversation = [
-#     {
-#         "role": "user",
-#         "content": [{"text": prompt }],
-#     }
-# ]
+    client = boto3.client("bedrock-runtime", region_name="us-east-1")
+    model_id = "amazon.nova-lite-v1:0"
+    conversation = [
+        {
+            "role": "user",
+            "content": [{"text": prompt }],
+        }
+    ]
 
-# try:
-#     response = client.converse(
-#         modelId=model_id,
-#         messages=conversation,
-#         inferenceConfig={"maxTokens": 400},
-#     )
+    try:
+        response = client.converse(
+            modelId=model_id,
+            messages=conversation,
+            inferenceConfig={"maxTokens": 400},
+        )
 
-#     response_text = response["output"]["message"]["content"][0]["text"]
-#     print(response_text)
+        response_text = response["output"]["message"]["content"][0]["text"]
+        print(response_text)
 
-# except (ClientError, Exception) as e:
-#     print(f"ERROR: Can't invoke '{model_id}'. Reason: {e}")
-#     exit(1)
+    except (ClientError, Exception) as e:
+        print(f"ERROR: Can't invoke '{model_id}'. Reason: {e}")
+        exit(1)
 
 
