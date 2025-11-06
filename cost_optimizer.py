@@ -53,11 +53,11 @@ def get_service_metrics(service, name):
     return data
 
 
-def generate_prompt(service, name):
+def generate_prompt(service, name, cost):
     config = get_resource_config(service, name)
     metrics = get_service_metrics(service, name)
 
-    prompt = f"\nService: {service}\nResource: {name}\n\nConfiguration:\n"
+    prompt = f"\nService: {service}\nResource: {name}\nCost Incurred:{cost}\n\nConfiguration:\n"
     for k, v in config.items():
         prompt += f"{k}: {v}\n"
 
@@ -73,8 +73,9 @@ for resource in resources:
     resource_arn=resource[0]
     service = resource_arn.split(':')[2]
     resource_name = resource_arn.split(':')[-1]
+    resource_cost=resource[1]
 
-    prompt = generate_prompt(service, resource_name)
+    prompt = generate_prompt(service, resource_name, resource_cost)
     print(prompt)
 
     client = boto3.client("bedrock-runtime", region_name="us-east-1")
