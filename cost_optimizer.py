@@ -65,40 +65,45 @@ def generate_prompt(service, name, cost):
     for d in metrics:
         prompt += f"{d['Metric']}: {d['AverageValue']} ({d['Statistic']})\n"
 
-    prompt += "\nBased on this data, suggest actions to optimize cost, performance, or configuration."
+    prompt += "\nBased on this data, suggest actions to optimize cost, performance, or configuration. No generic recomendations but based on analysis of given data."
     return prompt
 
-resources=[("arn:aws:s3:::cost-and-usage-rep-s3",0.7)]
-for resource in resources:
-    resource_arn=resource[0]
-    service = resource_arn.split(':')[2]
-    resource_name = resource_arn.split(':')[-1]
-    resource_cost=resource[1]
+if __name__=="__main__":
+    resources=[("arn:aws:s3:::cost-and-usage-rep-s3",0.7)]
+    # bucket=boto3.client('s3')
+    # get parquet form s3
+    # parse parquet and get top 5
 
-    prompt = generate_prompt(service, resource_name, resource_cost)
-    print(prompt)
+    for resource in resources:
+        resource_arn=resource[0]
+        service = resource_arn.split(':')[2]
+        resource_name = resource_arn.split(':')[-1]
+        resource_cost=resource[1]
 
-    client = boto3.client("bedrock-runtime", region_name="us-east-1")
-    model_id = "amazon.nova-lite-v1:0"
-    conversation = [
-        {
-            "role": "user",
-            "content": [{"text": prompt }],
-        }
-    ]
+        prompt = generate_prompt(service, resource_name, resource_cost)
+        print(prompt)
 
-    try:
-        response = client.converse(
-            modelId=model_id,
-            messages=conversation,
-            inferenceConfig={"maxTokens": 400},
-        )
+        client = boto3.client("bedrock-runtime", region_name="us-east-1")
+        model_id = "amazon.nova-lite-v1:0"
+        conversation = [
+            {
+                "role": "user",
+                "content": [{"text": prompt }],
+            }
+        ]
 
-        response_text = response["output"]["message"]["content"][0]["text"]
-        print(response_text)
+        try:
+            response = client.converse(
+                modelId=model_id,
+                messages=conversation,
+                inferenceConfig={"maxTokens": 400},
+            )
 
-    except (ClientError, Exception) as e:
-        print(f"ERROR: Can't invoke '{model_id}'. Reason: {e}")
-        exit(1)
+            response_text = response["output"]["message"]["content"][0]["text"]
+            print(response_text)
+
+        except (ClientError, Exception) as e:
+            print(f"ERROR: Can't invoke '{model_id}'. Reason: {e}")
+            exit(1)
 
 
