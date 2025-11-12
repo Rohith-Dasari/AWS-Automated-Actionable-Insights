@@ -2,6 +2,7 @@ import boto3
 from datetime import datetime, timedelta, timezone
 from service_config import SERVICE_CONFIG
 from botocore.exceptions import ClientError
+import pandas as pd
 
 
 def get_resource_client(service):
@@ -70,15 +71,25 @@ def generate_prompt(service, name, cost):
 
 if __name__=="__main__":
     resources=[("arn:aws:s3:::cost-and-usage-rep-s3",0.7)]
-    # bucket=boto3.client('s3')
-    # get parquet form s3
-    # parse parquet and get top 5
+    s3=boto3.client('s3')
+    bucket_name="cur-data-exports-1"
+    object_key = "report1-00001.snappy (1).parquet"
+    local_file="cur_report.parquet"
+    cost_param="estimated_monthly_cost_after_discount"
+    s3.download_file(bucket_name, object_key, local_file)
+    df=pd.read_parquet(local_file)
+    top5_df = (
+    df.groupby("resource_arn", as_index=False)[cost_param]
+      .sum()                         
+      .sort_values(cost_param, ascending=False)  
+      .head(5)                       
+    )    
 
-    for resource in resources:
-        resource_arn=resource[0]
+    for _, row in top5_df.iterrows():
+        resource_arn=row["resource_arn"]
         service = resource_arn.split(':')[2]
         resource_name = resource_arn.split(':')[-1]
-        resource_cost=resource[1]
+        resource_cost=row[cost_param]
 
         prompt = generate_prompt(service, resource_name, resource_cost)
         print(prompt)
